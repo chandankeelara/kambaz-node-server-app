@@ -1,23 +1,44 @@
-import Database from '../Database/index.js';
+import { v4 as uuidv4 } from "uuid";
+import model from "../Courses/model.js";
+export default function ModulesDao() {
+async function createModule(courseId, module) {
+   const newModule = { ...module, _id: uuidv4() };
+   const status = await model.updateOne(
+     { _id: courseId },
+     { $push: { modules: newModule } }
+   );
+return newModule;
+}
 
-let { modules } = Database;
+ async function findModulesForCourse(courseId) {
+   const course = await model.findById(courseId);
+   return course?.modules || [];
+ }
+ async function deleteModule(courseId, moduleId) {
+   const status = await model.updateOne(
+     { _id: courseId },
+     { $pull: { modules: { _id: moduleId } } }
+   );
+   if (status.matchedCount === 0) {
+     throw new Error(`Course with id ${courseId} not found`);
+   }
+   return status;
+}
+async function updateModule(courseId, moduleId, moduleUpdates) {
+   const course = await model.findById(courseId);
+   if (!course) {
+     throw new Error(`Course with id ${courseId} not found`);
+   }
+   const module = course.modules.id(moduleId);
+   if (!module) {
+     throw new Error(`Module with id ${moduleId} not found`);
+   }
+   Object.assign(module, moduleUpdates);
+   await course.save();
+   return module;
+}
 
-export const findModulesForCourse = (courseId) =>
-  modules.filter((module) => module.course === courseId);
-
-export const createModule = (module) => {
-  const newModule = { ...module, _id: Date.now().toString() };
-  modules = [...modules, newModule];
-  return newModule;
-};
-
-export const deleteModule = (moduleId) => {
-  modules = modules.filter((module) => module._id !== moduleId);
-};
-
-export const updateModule = (moduleId, moduleUpdates) => {
-  modules = modules.map((module) =>
-    module._id === moduleId ? { ...module, ...moduleUpdates } : module
-  );
-  return modules.find((module) => module._id === moduleId);
-};
+ return {
+   findModulesForCourse,createModule, deleteModule, updateModule
+ };
+}
