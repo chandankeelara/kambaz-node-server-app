@@ -98,7 +98,9 @@ if (process.env.SERVER_ENV !== "development") {
   sessionOptions.cookie = {
     sameSite: "none",
     secure: true,
-    domain: process.env.SERVER_URL,
+    // Host-only cookie: a domain attribute that doesn't match the host makes browsers drop it.
+    // Partitioned (CHIPS) keeps the cross-site session working where Chrome blocks third-party cookies.
+    partitioned: true,
   };
 }
 app.use(session(sessionOptions));
