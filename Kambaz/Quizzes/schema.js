@@ -1,7 +1,8 @@
 import mongoose from "mongoose";
+import { v4 as uuidv4 } from "uuid";
 
 const questionSchema = new mongoose.Schema({
-  _id: String,
+  _id: { type: String, default: () => uuidv4() },
   type: { 
     type: String, 
     enum: ["MULTIPLE_CHOICE", "TRUE_FALSE", "FILL_BLANK"],
@@ -12,7 +13,10 @@ const questionSchema = new mongoose.Schema({
   question: String,
   
   choices: [String],
-  correctAnswer: String,
+  // MULTIPLE_CHOICE: correctChoice is the choice index; correctAnswer may hold the choice text.
+  // TRUE_FALSE: correctAnswer is a boolean.
+  correctChoice: Number,
+  correctAnswer: mongoose.Schema.Types.Mixed,
   
   blanks: [{
     possibleAnswers: [String],

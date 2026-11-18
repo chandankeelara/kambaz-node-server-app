@@ -2,6 +2,12 @@ import QuizzesDao from "./dao.js";
 
 export default function QuizzesRoutes(app) {
   const dao = QuizzesDao();
+  const requireStaff = (req, res) => {
+    const currentUser = req.session["currentUser"];
+    if (!currentUser) { res.sendStatus(401); return false; }
+    if (currentUser.role !== "FACULTY" && currentUser.role !== "ADMIN") { res.sendStatus(403); return false; }
+    return true;
+  };
 
   const stripCorrectAnswers = (quiz, userRole) => {
     if (userRole === "FACULTY") {
@@ -15,6 +21,7 @@ export default function QuizzesRoutes(app) {
         
         if (q.type === "MULTIPLE_CHOICE") {
           delete sanitizedQuestion.correctAnswer;
+          delete sanitizedQuestion.correctChoice;
         } else if (q.type === "TRUE_FALSE") {
           delete sanitizedQuestion.correctAnswer;
         } else if (q.type === "FILL_BLANK") {
@@ -53,6 +60,7 @@ export default function QuizzesRoutes(app) {
   app.get("/api/courses/:courseId/quizzes", findQuizzesForCourse);
 
   const createQuizForCourse = async (req, res) => {
+    if (!requireStaff(req, res)) return;
     const { courseId } = req.params;
     try {
       const quiz = {
@@ -68,6 +76,7 @@ export default function QuizzesRoutes(app) {
   app.post("/api/courses/:courseId/quizzes", createQuizForCourse);
 
   const deleteQuiz = async (req, res) => {
+    if (!requireStaff(req, res)) return;
     const { quizId } = req.params;
     try {
       const result = await dao.deleteQuiz(quizId);
@@ -79,6 +88,7 @@ export default function QuizzesRoutes(app) {
   app.delete("/api/quizzes/:quizId", deleteQuiz);
 
   const updateQuiz = async (req, res) => {
+    if (!requireStaff(req, res)) return;
     const { quizId } = req.params;
     const quizUpdates = req.body;
     

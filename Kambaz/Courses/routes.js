@@ -11,6 +11,10 @@ export default function CourseRoutes(app) {
       res.sendStatus(401);
       return;
     }
+    if (currentUser.role !== "FACULTY" && currentUser.role !== "ADMIN") {
+      res.status(403).json({ error: "Only faculty can create courses" });
+      return;
+    }
     // Set the author to the current user
     const courseData = { ...req.body, author: currentUser._id };
     const newCourse = await dao.createCourse(courseData);

@@ -2,6 +2,12 @@ import AssignmentsDao from "./dao.js";
 
 export default function AssignmentsRoutes(app) {
   const dao = AssignmentsDao();
+  const requireStaff = (req, res) => {
+    const currentUser = req.session["currentUser"];
+    if (!currentUser) { res.sendStatus(401); return false; }
+    if (currentUser.role !== "FACULTY" && currentUser.role !== "ADMIN") { res.sendStatus(403); return false; }
+    return true;
+  };
 
   const findAssignmentsForCourse = async (req, res) => {
     const { courseId } = req.params;
@@ -15,6 +21,7 @@ export default function AssignmentsRoutes(app) {
   app.get("/api/courses/:courseId/assignments", findAssignmentsForCourse);
 
   const createAssignmentForCourse = async (req, res) => {
+    if (!requireStaff(req, res)) return;
     const { courseId } = req.params;
     try {
       const assignment = {
@@ -30,6 +37,7 @@ export default function AssignmentsRoutes(app) {
   app.post("/api/courses/:courseId/assignments", createAssignmentForCourse);
 
   const deleteAssignment = async (req, res) => {
+    if (!requireStaff(req, res)) return;
     const { assignmentId } = req.params;
     try {
       const result = await dao.deleteAssignment(assignmentId);
@@ -41,6 +49,7 @@ export default function AssignmentsRoutes(app) {
   app.delete("/api/assignments/:assignmentId", deleteAssignment);
 
   const updateAssignment = async (req, res) => {
+    if (!requireStaff(req, res)) return;
     const { assignmentId } = req.params;
     const assignmentUpdates = req.body;
     try {

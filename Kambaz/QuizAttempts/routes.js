@@ -25,7 +25,16 @@ export default function QuizAttemptsRoutes(app) {
       let pointsEarned = 0;
 
       if (question.type === "MULTIPLE_CHOICE") {
-        isCorrect = studentAnswer.answer === question.correctAnswer;
+        const choices = question.choices || [];
+        let correctIndex = typeof question.correctChoice === "number" ? question.correctChoice : -1;
+        if (typeof question.correctAnswer === "string" && choices.includes(question.correctAnswer)) {
+          correctIndex = choices.indexOf(question.correctAnswer);
+        }
+        const given = studentAnswer.answer;
+        isCorrect = correctIndex >= 0 && (
+          (typeof given === "number" && given === correctIndex) ||
+          (typeof given === "string" && given === choices[correctIndex])
+        );
         pointsEarned = isCorrect ? (question.points || 0) : 0;
       } else if (question.type === "TRUE_FALSE") {
         // Handle both boolean and string representations

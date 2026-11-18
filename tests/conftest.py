@@ -92,7 +92,7 @@ def api_client():
 
 
 @pytest.fixture(scope="function")
-def authenticated_client_student(api_client):
+def authenticated_client_student():
     """
     Provides an authenticated API client with a student user
 
@@ -100,6 +100,7 @@ def authenticated_client_student(api_client):
         def test_something(authenticated_client_student):
             response = authenticated_client_student.get_courses()
     """
+    api_client = APIClient()
     # Create and sign in student
     student_data = data_factory.generate_user(role="STUDENT")
     api_client.signup(student_data)
@@ -115,10 +116,11 @@ def authenticated_client_student(api_client):
         api_client.signout()
     except:
         pass
+    api_client.close()
 
 
 @pytest.fixture(scope="function")
-def authenticated_client_faculty(api_client):
+def authenticated_client_faculty():
     """
     Provides an authenticated API client with a faculty user
 
@@ -126,6 +128,7 @@ def authenticated_client_faculty(api_client):
         def test_something(authenticated_client_faculty):
             response = authenticated_client_faculty.create_course(course_data)
     """
+    api_client = APIClient()
     # Create and sign in faculty
     faculty_data = data_factory.generate_user(role="FACULTY")
     api_client.signup(faculty_data)
@@ -141,13 +144,15 @@ def authenticated_client_faculty(api_client):
         api_client.signout()
     except:
         pass
+    api_client.close()
 
 
 @pytest.fixture(scope="function")
-def authenticated_client_admin(api_client):
+def authenticated_client_admin():
     """
     Provides an authenticated API client with an admin user
     """
+    api_client = APIClient()
     # Create and sign in admin
     admin_data = data_factory.generate_user(role="ADMIN")
     api_client.signup(admin_data)
@@ -163,6 +168,7 @@ def authenticated_client_admin(api_client):
         api_client.signout()
     except:
         pass
+    api_client.close()
 
 
 @pytest.fixture(scope="function")
